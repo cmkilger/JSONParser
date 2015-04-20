@@ -503,9 +503,6 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
         } else if (character == '"') {
             stringBuffer[stringLength] = 0;
             printf("Found string\n");
-            printf("---\n");
-            printf("%s\n", stringBuffer);
-            printf("---\n");
             if (error_p) {
                 *error_p = 0;
             }
@@ -562,6 +559,7 @@ void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p) {
 
 void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p) {
     if (error_p) {
+        printf("Failed on number\n");
         *error_p = 1;
     }
 }
@@ -579,10 +577,6 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char *
     
     // Find any type of element
     switch (character) {
-        case 0: {
-            // TODO: End of JSON
-        } break;
-            
         case '{': {
             parseJSONObject(&(json[offset]), &length, &error, stringBuffer, bufferSize);
         } break;
@@ -627,31 +621,53 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char *
     }
 }
 
+const char * jsonFromFile(const char * filename) {
+    char * buffer = 0;
+    long length;
+    FILE * f = fopen (filename, "rb");
+    
+    if (f)
+    {
+        fseek (f, 0, SEEK_END);
+        length = ftell (f);
+        fseek (f, 0, SEEK_SET);
+        buffer = malloc (length);
+        if (buffer)
+        {
+            fread (buffer, 1, length, f);
+        }
+        fclose (f);
+    }
+    
+    return buffer;
+}
+
 int main(int argc, char *argv[]) {
     
     uint8_t error;
     uint64_t length;
     
-    //    const char * json = "{\n\t\"key\" : [\"string\",-1.2,01.5e+6,true,false,null]\n}";
-    size_t bufferSize = 128;
+//    const char * json = "{\n\t\"key\" : [\"string\",-1.2,01.5e+6,true,false,null]\n}";
+    size_t bufferSize = 1024;
     char * stringBuffer = (char *)malloc(bufferSize);
     memset(stringBuffer, 0, bufferSize);
-    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\",true,false,null, \"你好😀\"]\n}";
+//    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\",true,false,null, \"你好😀\"]\n}";
+    const char * json = jsonFromFile("/Users/cmkilger/Desktop/details.json");
     parseJSON(json, &length, &error, stringBuffer, bufferSize);
     
     printf("\n");
-    printf("%s\n", json);
+//    printf("%s\n", json);
     printf("%d\n", error);
     printf("%s\n", stringBuffer);
     free(stringBuffer);
     
-    //    const char * string = "你好😀 Cory";
-    //    uint64_t character;
-    //    while ((character = UTF8Character(string, &length, &error)) != 0) {
-    ////        printf("%u\n", error);
-    ////        printf("%u\n", length);
-    //        printf("0x%llx\n", character);
-    //        string = &(string[length]);
-    //    }
+//    const char * string = "你好😀 Cory";
+//    uint64_t character;
+//    while ((character = UTF8Character(string, &length, &error)) != 0) {
+////        printf("%u\n", error);
+////        printf("%u\n", length);
+//        printf("0x%llx\n", character);
+//        string = &(string[length]);
+//    }
     
 }
