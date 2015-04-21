@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9AA027C91AE56E1A00DED6E8"
+               BlueprintIdentifier = "9AA027DF1AE60E6800DED6E8"
                BuildableName = "JSONParser"
                BlueprintName = "JSONParser"
                ReferencedContainer = "container:JSONParser.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "9AA027C91AE56E1A00DED6E8"
+            BlueprintIdentifier = "9AA027DF1AE60E6800DED6E8"
             BuildableName = "JSONParser"
             BlueprintName = "JSONParser"
             ReferencedContainer = "container:JSONParser.xcodeproj">
@@ -52,7 +52,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "9AA027C91AE56E1A00DED6E8"
+            BlueprintIdentifier = "9AA027DF1AE60E6800DED6E8"
             BuildableName = "JSONParser"
             BlueprintName = "JSONParser"
             ReferencedContainer = "container:JSONParser.xcodeproj">
@@ -71,7 +71,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "9AA027C91AE56E1A00DED6E8"
+            BlueprintIdentifier = "9AA027DF1AE60E6800DED6E8"
             BuildableName = "JSONParser"
             BlueprintName = "JSONParser"
             ReferencedContainer = "container:JSONParser.xcodeproj">

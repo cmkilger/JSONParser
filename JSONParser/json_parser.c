@@ -1,31 +1,13 @@
 //
-//  main.c
+//  json_parser.c
 //  JSONParser
 //
 //  Created by Cory Kilger on 4/20/15.
 //  Copyright (c) 2015 Cory Kilger. All rights reserved.
 //
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "json_parser.h"
 #include <tgmath.h>
-
-typedef struct {
-    void *userInfo;
-    void(*startObject)(void *userInfo);
-    void(*endObject)(void *userInfo);
-    void(*startArray)(void *userInfo);
-    void(*endArray)(void *userInfo);
-    void(*foundString)(const char * string, uint64_t length, void *userInfo);
-    void(*foundNumber)(double number, void *userInfo);
-    void(*foundTrue)(void *userInfo);
-    void(*foundFalse)(void *userInfo);
-    void(*foundNull)(void *userInfo);
-} json_parser;
-
 
 uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p);
 void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
@@ -35,7 +17,6 @@ void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p, js
 void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
 void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
 void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
-void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
 
 uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p) {
     uint8_t byte = json[0];
@@ -714,45 +695,4 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_p
         }
         return;
     }
-}
-
-const char * jsonFromFile(const char * filename) {
-    char * buffer = 0;
-    long length;
-    FILE * f = fopen (filename, "rb");
-    
-    if (f)
-    {
-        fseek (f, 0, SEEK_END);
-        length = ftell (f);
-        fseek (f, 0, SEEK_SET);
-        buffer = malloc (length);
-        if (buffer)
-        {
-            fread (buffer, 1, length, f);
-        }
-        fclose (f);
-    }
-    
-    return buffer;
-}
-
-int main(int argc, char *argv[]) {
-    
-    uint8_t error;
-    uint64_t length;
-    
-//    const char * json = "{\n\t\"key\" : [\"string\",-1.2,01.5e+6,true,false,null]\n}";
-    size_t bufferSize = 1024;
-    char * stringBuffer = (char *)malloc(bufferSize);
-    memset(stringBuffer, 0, bufferSize);
-//    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\", 1, -12, -12.3, 1.23, 1.23e200, 1.23e-1, true, false, null, \"你好😀\"]\n}";
-    const char * json = jsonFromFile("/Users/cmkilger/Desktop/details.json");
-    parseJSON(json, &length, &error, NULL, stringBuffer, bufferSize);
-    
-    printf("\n");
-    printf("%d\n", error);
-    printf("%s\n", stringBuffer);
-    free(stringBuffer);
-    
 }
