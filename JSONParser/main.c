@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <tgmath.h>
 
 uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p);
 void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize);
@@ -213,7 +214,7 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, c
         character = skipWhitespace(&(json[offset]), &length, &error);
         offset += length+1;
         
-        // Get :
+        // Get , or end
         switch (character) {
             case ',': {
                 // Continue loop
@@ -545,10 +546,87 @@ void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p) {
 
 void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p) {
     uint8_t error;
-    uint64_t length;
+    uint8_t length;
     uint64_t character;
-    uint64_t offset = 0;
+    uint64_t offset;
     
+    double value = 0;
+    
+    uint64_t spaceLength;
+    character = skipWhitespace(json, &spaceLength, &error);
+    offset = spaceLength;
+    
+    uint8_t isNegative = 0;
+    if (character == '-') {
+        offset++;
+        isNegative = 1;
+        character = UTF8Character(&(json[offset]), &length, &error);
+    }
+    
+    if (character == '0') {
+        // Do nothing
+    } else if ('1' <= character && character <= '9') {
+        do {
+            value = (value * 10) + character - '0';
+            character = UTF8Character(&(json[++offset]), &length, &error);
+        } while ('0' <= character && character <= '9');
+    } else {
+        if (error_p) {
+            *error_p = error;
+        }
+        return;
+    }
+    
+    if (character == '.') {
+        uint8_t percision = 1;
+        character = UTF8Character(&(json[++offset]), &length, &error);
+        while ('0' <= character && character <= '9') {
+            value += (character - '0')/pow(10, percision++);
+            character = UTF8Character(&(json[++offset]), &length, &error);
+        }
+    }
+    
+    if (character == 'e' || character == 'E') {
+        uint8_t isSmall = 0;
+        int exponent = 0;
+        character = UTF8Character(&(json[++offset]), &length, &error);
+        if (character == '+') {
+            isSmall = 0;
+            offset++;
+        } else if (character == '-') {
+            isSmall = 1;
+            offset++;
+        }
+        
+        character = UTF8Character(&(json[offset]), &length, &error);
+        if ('0' <= character && character <= '9') {
+            exponent = (int)(character - '0');
+        } else {
+            if (error_p) {
+                *error_p = error;
+            }
+            return;
+        }
+        
+        character = UTF8Character(&(json[++offset]), &length, &error);
+        while ('0' <= character && character <= '9') {
+            exponent = (exponent * 10) + (int)(character - '0');
+            character = UTF8Character(&(json[++offset]), &length, &error);
+        }
+        if (isSmall) {
+            exponent *= -1;
+        }
+        value *= pow(10, exponent);
+    }
+    
+    if (isNegative) {
+        value *= -1;
+    }
+    
+    *length_p = offset;
+    
+    printf("%f\n", value);
+    printf("Found number\n");
 }
 
 void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize) {
@@ -638,7 +716,7 @@ int main(int argc, char *argv[]) {
     size_t bufferSize = 1024;
     char * stringBuffer = (char *)malloc(bufferSize);
     memset(stringBuffer, 0, bufferSize);
-    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\", true, false, null, \"你好😀\"]\n}";
+    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\", 1, -12, -12.3, 1.23, 1.23e200, 1.23e-1, true, false, null, \"你好😀\"]\n}";
 //    const char * json = jsonFromFile("/Users/cmkilger/Desktop/details.json");
     parseJSON(json, &length, &error, stringBuffer, bufferSize);
     
