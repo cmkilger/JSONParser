@@ -10,19 +10,12 @@
 #import "JSONParser.h"
 
 @interface CKJSONSerialization () <JSONParserDelegate>
-//{
-//    id _root;
-//    NSString * _currentKey;
-//    NSMutableArray * _containers;
-//    NSMutableDictionary * _currentObject;
-//    NSMutableArray * _currentArray;
-//}
 
-@property (assign) void * root;
+@property (strong) id root;
 @property (strong) NSString * currentKey;
 @property (strong) NSMutableArray * containers;
-@property (assign) CFMutableDictionaryRef currentObject;
-@property (assign) CFMutableArrayRef currentArray;
+@property (strong) NSMutableDictionary * currentObject;
+@property (strong) NSMutableArray * currentArray;
 
 @end
 
@@ -36,18 +29,6 @@
     return self;
 }
 
-- (void)dealloc {
-    if (_root) {
-        CFRelease(_root);
-    }
-    if (_currentObject) {
-        CFRelease(_currentObject);
-    }
-    if (_currentArray) {
-        CFRelease(_currentArray);
-    }
-}
-
 + (id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error {
     id result = nil;
     @autoreleasepool {
@@ -55,7 +36,7 @@
         CKJSONSerialization * treeParser = [[CKJSONSerialization alloc] init];
         parser.delegate = treeParser;
         [parser parseData:data error:error];
-        result = (__bridge id)(treeParser->_root);
+        result = treeParser->_root;
     }
     return result;
 }
@@ -64,19 +45,16 @@
 #pragma mark - Parser delegate
     
 - (void)parserDidStartObject:(JSONParser *)parser {
-    CFMutableDictionaryRef object = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
-//    id container;
+    NSMutableDictionary * object = [[NSMutableDictionary alloc] init];
     if (_currentKey && _currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), object);
-//        [container setObject:object forKey:_currentKey];
+        [_currentObject setObject:object forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, object);
-//        [container addObject:object];
+        [_currentArray addObject:object];
     } else if (_root == nil) {
         _root = object;
     }
-    [_containers addObject:(__bridge id)(object)];
+    [_containers addObject:object];
     _currentObject = object;
     _currentArray = nil;
 }
@@ -85,28 +63,25 @@
     [_containers removeLastObject];
     id container = [_containers lastObject];
     if ([container isKindOfClass:[NSMutableDictionary class]]) {
-        _currentObject = (__bridge CFMutableDictionaryRef)(container);
+        _currentObject = container;
         _currentArray = nil;
     } else if ([container isKindOfClass:[NSMutableArray class]]) {
         _currentObject = nil;
-        _currentArray = (__bridge CFMutableArrayRef)(container);
+        _currentArray = container;
     }
 }
 
 - (void)parserDidStartArray:(JSONParser *)parser {
-    CFMutableArrayRef array = CFArrayCreateMutable(NULL, 0, NULL);
-//    id container = [_containers lastObject];
+    NSMutableArray * array = [[NSMutableArray alloc] init];
     if (_currentKey && _currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), array);
-//        [container setObject:array forKey:_currentKey];
+        [_currentObject setObject:array forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, array);
-//        [container addObject:array];
+        [_currentArray addObject:array];
     } else if (_root == nil) {
         _root = array;
     }
-    [_containers addObject:(__bridge id)(array)];
+    [_containers addObject:array];
     _currentObject = nil;
     _currentArray = array;
 }
@@ -115,85 +90,70 @@
     [_containers removeLastObject];
     id container = [_containers lastObject];
     if ([container isKindOfClass:[NSMutableDictionary class]]) {
-        _currentObject = (__bridge CFMutableDictionaryRef)(container);
+        _currentObject = container;
         _currentArray = nil;
     } else if ([container isKindOfClass:[NSMutableArray class]]) {
         _currentObject = nil;
-        _currentArray = (__bridge CFMutableArrayRef)(container);
+        _currentArray = container;
     }
 }
 
 - (void)parser:(JSONParser *)parser foundString:(NSString *)string {
-//    id container;
     if (_currentObject) {
         if (_currentKey) {
-            CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), (__bridge const void *)(string));
-//            [container setObject:string forKey:_currentKey];
+            [_currentObject setObject:string forKey:_currentKey];
             _currentKey = nil;
         } else {
             _currentKey = string;
         }
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, (__bridge const void *)(string));
-//        [container addObject:string];
+        [_currentArray addObject:string];
     } else {
-        _root = (__bridge void *)(string);
+        _root = string;
     }
 }
 
 - (void)parser:(JSONParser *)parser foundNumber:(NSNumber *)number {
-//    id container;
     if (_currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), (__bridge const void *)(number));
-//        [container setObject:number forKey:_currentKey];
+        [_currentObject setObject:number forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, (__bridge const void *)(number));
-//        [container addObject:number];
+        [_currentArray addObject:number];
     } else if (_root == nil) {
-        _root = (__bridge void *)(number);
+        _root = number;
     }
 }
 
 - (void)parserFoundTrue:(JSONParser *)parser {
-    //    id container;
     if (_currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), (__bridge const void *)(@(YES)));
-//        [container setObject:@(YES) forKey:_currentKey];
+        [_currentObject setObject:@(YES) forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, (__bridge const void *)(@(YES)));
-//        [container addObject:@(YES)];
+        [_currentArray addObject:@(YES)];
     } else if (_root == nil) {
-        _root = (__bridge void *)(@(YES));
+        _root = @(YES);
     }
 }
 
 - (void)parserFoundFalse:(JSONParser *)parser {
-    //    id container;
     if (_currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), (__bridge const void *)(@(NO)));
-        //        [container setObject:@(YES) forKey:_currentKey];
+        [_currentObject setObject:@(NO) forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, (__bridge const void *)(@(NO)));
-        //        [container addObject:@(YES)];
+        [_currentArray addObject:@(NO)];
     } else if (_root == nil) {
-        _root = (__bridge void *)(@(NO));
+        _root = @(NO);
     }
 }
 
 - (void)parserFoundNull:(JSONParser *)parser {
-    //    id container;
     if (_currentObject) {
-        CFDictionaryAddValue(_currentObject, (__bridge const void *)(_currentKey), (__bridge const void *)([NSNull null]));
-        //        [container setObject:@(YES) forKey:_currentKey];
+        [_currentObject setObject:[NSNull null] forKey:_currentKey];
         _currentKey = nil;
     } else if (_currentArray) {
-        CFArrayAppendValue(_currentArray, (__bridge const void *)([NSNull null]));
-        //        [container addObject:@(YES)];
+        [_currentArray addObject:[NSNull null]];
     } else if (_root == nil) {
-        _root = (__bridge void *)([NSNull null]);
+        _root = [NSNull null];
     }
 }
 
