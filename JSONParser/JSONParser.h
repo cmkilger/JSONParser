@@ -16,7 +16,6 @@ extern NSString * JSONParserErrorDomain;
 
 @protocol JSONParserDelegate <NSObject>
 
-@optional
 - (void)parserDidStartObject:(JSONParser *)parser;
 - (void)parserDidEndObject:(JSONParser *)parser;
 - (void)parserDidStartArray:(JSONParser *)parser;
