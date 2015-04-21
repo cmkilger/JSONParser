@@ -13,15 +13,29 @@
 #include <ctype.h>
 #include <tgmath.h>
 
+typedef struct {
+    void *userInfo;
+    void(*startObject)(void *userInfo);
+    void(*endObject)(void *userInfo);
+    void(*startArray)(void *userInfo);
+    void(*endArray)(void *userInfo);
+    void(*foundString)(const char * string, uint64_t length, void *userInfo);
+    void(*foundNumber)(double number, void *userInfo);
+    void(*foundTrue)(void *userInfo);
+    void(*foundFalse)(void *userInfo);
+    void(*foundNull)(void *userInfo);
+} json_parser;
+
+
 uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p);
-void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize);
-void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize);
-void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize);
-void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p);
-void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p);
-void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p);
-void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p);
-void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize);
+void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
+void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
+void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
+void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
+void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
+void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
+void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser);
+void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize);
 
 uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p) {
     uint8_t byte = json[0];
@@ -99,7 +113,7 @@ static inline uint64_t skipWhitespace(const char * json, uint64_t * length_p, ui
     return character;
 }
 
-void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize) {
+void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize) {
     uint8_t error;
     uint8_t charLength;
     uint64_t length;
@@ -116,12 +130,14 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
         return;
     }
     
-    printf("Start object\n");
+    if (jsonParser && jsonParser->startObject) {
+        jsonParser->startObject(jsonParser->userInfo);
+    }
     
     while (1) {
         
         // Get key
-        parseJSONString(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+        parseJSONString(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         offset += length;
         if (error) {
             if (error_p) {
@@ -143,7 +159,7 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
         }
         
         // Get value
-        parseJSON(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+        parseJSON(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         offset += length;
         if (error) {
             if (error_p) {
@@ -163,8 +179,9 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
             } break;
                 
             case '}': {
-                // TODO: Done, return length
-                printf("End object\n");
+                if (jsonParser && jsonParser->endObject) {
+                    jsonParser->endObject(jsonParser->userInfo);
+                }
                 *length_p = offset;
                 return;
             } break;
@@ -179,7 +196,7 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
     }
 }
 
-void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize) {
+void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize) {
     uint8_t error;
     uint8_t charLength;
     uint64_t length;
@@ -196,12 +213,14 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, c
         return;
     }
     
-    printf("Start array\n");
+    if (jsonParser && jsonParser->startArray) {
+        jsonParser->startArray(jsonParser->userInfo);
+    }
     
     while (1) {
         
         // Get value
-        parseJSON(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+        parseJSON(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         offset += length;
         if (error) {
             if (error_p) {
@@ -221,7 +240,9 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, c
             } break;
                 
             case ']': {
-                printf("End array\n");
+                if (jsonParser && jsonParser->endArray) {
+                    jsonParser->endArray(jsonParser->userInfo);
+                }
                 *length_p = offset;
                 return;
             } break;
@@ -409,7 +430,7 @@ static inline uint64_t appendCharacter(uint64_t character, char * stringBuffer, 
     return newLength;
 }
 
-void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize) {
+void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize) {
     uint8_t error;
     uint8_t length;
     uint64_t character;
@@ -489,7 +510,9 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
             }
         } else if (character == '"') {
             stringBuffer[stringLength] = 0;
-            printf("Found string\n");
+            if (jsonParser && jsonParser->foundString) {
+                jsonParser->foundString(stringBuffer, stringLength, jsonParser->userInfo);
+            }
             if (error_p) {
                 *error_p = 0;
             }
@@ -508,43 +531,49 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
     }
 }
 
-void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p) {
+void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 't' && json[1+length] == 'r' && json[2+length] == 'u' && json[3+length] == 'e') {
         *length_p = 4+length;
-        printf("Found true\n");
+        if (jsonParser && jsonParser->foundTrue) {
+            jsonParser->foundTrue(jsonParser->userInfo);
+        }
     } else if (error_p) {
         *error_p = 1;
     }
 }
 
-void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p) {
+void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 'f' && json[1+length] == 'a' && json[2+length] == 'l' && json[3+length] == 's' && json[4+length] == 'e') {
         *length_p = 5+length;
-        printf("Found false\n");
+        if (jsonParser && jsonParser->foundFalse) {
+            jsonParser->foundFalse(jsonParser->userInfo);
+        }
     } else if (error_p) {
         *error_p = 1;
     }
 }
 
-void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p) {
+void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 'n' && json[1+length] == 'u' && json[2+length] == 'l' && json[3+length] == 'l') {
         *length_p = 4+length;
-        printf("Found null\n");
+        if (jsonParser && jsonParser->foundNull) {
+            jsonParser->foundNull(jsonParser->userInfo);
+        }
     } else if (error_p) {
         *error_p = 1;
     }
 }
 
-void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p) {
+void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint8_t length;
     uint64_t character;
@@ -625,11 +654,12 @@ void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p) 
     
     *length_p = offset;
     
-    printf("%f\n", value);
-    printf("Found number\n");
+    if (jsonParser && jsonParser->foundNumber) {
+        jsonParser->foundNumber(value, jsonParser->userInfo);
+    }
 }
 
-void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char * stringBuffer, size_t bufferSize) {
+void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize) {
     uint8_t error;
     uint64_t length = 0;
     uint64_t offset = 0;
@@ -643,32 +673,32 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, char *
     // Find any type of element
     switch (character) {
         case '{': {
-            parseJSONObject(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+            parseJSONObject(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         } break;
             
         case '[': {
-            parseJSONArray(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+            parseJSONArray(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         } break;
             
         case '"': {
-            parseJSONString(&(json[offset]), &length, &error, stringBuffer, bufferSize);
+            parseJSONString(&(json[offset]), &length, &error, jsonParser, stringBuffer, bufferSize);
         } break;
             
         case 't': {
-            parseJSONTrue(&(json[offset]), &length, &error);
+            parseJSONTrue(&(json[offset]), &length, &error, jsonParser);
         } break;
             
         case 'f': {
-            parseJSONFalse(&(json[offset]), &length, &error);
+            parseJSONFalse(&(json[offset]), &length, &error, jsonParser);
         } break;
             
         case 'n': {
-            parseJSONNull(&(json[offset]), &length, &error);
+            parseJSONNull(&(json[offset]), &length, &error, jsonParser);
         } break;
             
         default: {
             if (character == '-' || (character >= '0' && character <= '9')) {
-                parseJSONNumber(&(json[offset]), &length, &error);
+                parseJSONNumber(&(json[offset]), &length, &error, jsonParser);
             } else if (error_p) {
                 *error_p = error;
             }
@@ -716,23 +746,13 @@ int main(int argc, char *argv[]) {
     size_t bufferSize = 1024;
     char * stringBuffer = (char *)malloc(bufferSize);
     memset(stringBuffer, 0, bufferSize);
-    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\", 1, -12, -12.3, 1.23, 1.23e200, 1.23e-1, true, false, null, \"你好😀\"]\n}";
-//    const char * json = jsonFromFile("/Users/cmkilger/Desktop/details.json");
-    parseJSON(json, &length, &error, stringBuffer, bufferSize);
+//    const char * json = "{\n\t\"key\" : [\"st\nri\\n\\\"g \\u4f60\\u597d\\ud83d\\ude00\", 1, -12, -12.3, 1.23, 1.23e200, 1.23e-1, true, false, null, \"你好😀\"]\n}";
+    const char * json = jsonFromFile("/Users/cmkilger/Desktop/details.json");
+    parseJSON(json, &length, &error, NULL, stringBuffer, bufferSize);
     
     printf("\n");
-//    printf("%s\n", json);
     printf("%d\n", error);
     printf("%s\n", stringBuffer);
     free(stringBuffer);
-    
-//    const char * string = "你好😀 Cory";
-//    uint64_t character;
-//    while ((character = UTF8Character(string, &length, &error)) != 0) {
-////        printf("%u\n", error);
-////        printf("%u\n", length);
-//        printf("0x%llx\n", character);
-//        string = &(string[length]);
-//    }
     
 }
