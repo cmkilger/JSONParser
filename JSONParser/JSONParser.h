@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSString * JSONParserErrorDomain;
+
 @class JSONParser;
 
 @protocol JSONParserDelegate <NSObject>
@@ -27,8 +31,10 @@
 
 @interface JSONParser : NSObject
 
-@property (weak) id<JSONParserDelegate> delegate;
+@property (nullable, weak) id<JSONParserDelegate> delegate;
 
-- (void)parseData:(NSData *)data;
+- (BOOL)parseData:(NSData *)data error:(NSError **)error;
 
 @end
+
+NS_ASSUME_NONNULL_END

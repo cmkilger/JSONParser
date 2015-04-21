@@ -10,6 +10,7 @@
 		9AA027E41AE60E6800DED6E8 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA027E31AE60E6800DED6E8 /* main.swift */; };
 		9AA027ED1AE60EF200DED6E8 /* json_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 9AA027EB1AE60EF200DED6E8 /* json_parser.c */; };
 		9AA027F21AE61A2100DED6E8 /* JSONParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA027F11AE61A2100DED6E8 /* JSONParser.m */; };
+		9AA027F71AE6AF8300DED6E8 /* CKJSONSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA027F61AE6AF8300DED6E8 /* CKJSONSerialization.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,9 +31,11 @@
 		9AA027EA1AE60EF100DED6E8 /* JSONParser-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JSONParser-Bridging-Header.h"; sourceTree = "<group>"; };
 		9AA027EB1AE60EF200DED6E8 /* json_parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = json_parser.c; sourceTree = "<group>"; };
 		9AA027EC1AE60EF200DED6E8 /* json_parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_parser.h; sourceTree = "<group>"; };
-		9AA027EE1AE6101D00DED6E8 /* JSONParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONParser.swift; sourceTree = "<group>"; };
 		9AA027F01AE61A2100DED6E8 /* JSONParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONParser.h; sourceTree = "<group>"; };
 		9AA027F11AE61A2100DED6E8 /* JSONParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONParser.m; sourceTree = "<group>"; };
+		9AA027F31AE6AB2D00DED6E8 /* CKJSONSerialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CKJSONSerialization.swift; sourceTree = "<group>"; };
+		9AA027F51AE6AF8300DED6E8 /* CKJSONSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CKJSONSerialization.h; sourceTree = "<group>"; };
+		9AA027F61AE6AF8300DED6E8 /* CKJSONSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CKJSONSerialization.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +69,11 @@
 			isa = PBXGroup;
 			children = (
 				9AA027E31AE60E6800DED6E8 /* main.swift */,
+				9AA027F31AE6AB2D00DED6E8 /* CKJSONSerialization.swift */,
+				9AA027F51AE6AF8300DED6E8 /* CKJSONSerialization.h */,
+				9AA027F61AE6AF8300DED6E8 /* CKJSONSerialization.m */,
 				9AA027F01AE61A2100DED6E8 /* JSONParser.h */,
 				9AA027F11AE61A2100DED6E8 /* JSONParser.m */,
-				9AA027EE1AE6101D00DED6E8 /* JSONParser.swift */,
 				9AA027EC1AE60EF200DED6E8 /* json_parser.h */,
 				9AA027EB1AE60EF200DED6E8 /* json_parser.c */,
 				9AA027EA1AE60EF100DED6E8 /* JSONParser-Bridging-Header.h */,
@@ -133,6 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9AA027ED1AE60EF200DED6E8 /* json_parser.c in Sources */,
+				9AA027F71AE6AF8300DED6E8 /* CKJSONSerialization.m in Sources */,
 				9AA027E41AE60E6800DED6E8 /* main.swift in Sources */,
 				9AA027F21AE61A2100DED6E8 /* JSONParser.m in Sources */,
 			);
@@ -223,6 +229,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "JSONParser/JSONParser-Bridging-Header.h";
@@ -234,6 +241,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "JSONParser/JSONParser-Bridging-Header.h";
