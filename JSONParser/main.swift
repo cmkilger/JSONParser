@@ -8,28 +8,28 @@
 
 import Foundation
 
-if let data = NSData(contentsOfFile: "/Users/cmkilger/Desktop/details.json") {
+if let data = NSData(contentsOfFile: "/Users/cmkilger/Desktop/users.json") {
     var start: NSDate
     var end: NSDate
     
     var obj: AnyObject? = nil
     start = NSDate()
     for i in 0 ..< 100 {
-        obj = CKJSONSerialization.JSONObjectWithData(data, options: nil, error: nil)
+        obj = try? CKJSONSerialization.JSONObjectWithData(data, options: [])
 //        sleep(1)
     }
     end = NSDate()
-    println("CKJSONSerialization: \(end.timeIntervalSinceDate(start)) seconds")
+    print("CKJSONSerialization: \(end.timeIntervalSinceDate(start)) seconds")
     
     sleep(2)
     start = NSDate()
     for i in 0 ..< 100 {
-        NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil)
+        try? NSJSONSerialization.JSONObjectWithData(data, options: [])
     }
     end = NSDate()
-    println("NSJSONSerialization: \(end.timeIntervalSinceDate(start)) seconds")
+    print("NSJSONSerialization: \(end.timeIntervalSinceDate(start)) seconds")
     
-    println(obj)
+    print(obj)
 } else {
-    println("failed to load data")
+    print("failed to load data")
 }
