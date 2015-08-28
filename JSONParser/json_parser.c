@@ -23,6 +23,10 @@ uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p)
     uint64_t character = 0;
     uint8_t length;
     
+    if (error_p) {
+        *error_p = 0;
+    }
+    
     // Determine number of bytes
     if ((byte & 0x80) == 0) {
         length = 1;
@@ -45,8 +49,10 @@ uint64_t UTF8Character(const char * json, uint8_t * length_p, uint8_t * error_p)
     }
     
     // Return with an error
-    else if (error_p) {
-        *error_p = 1;
+    else {
+        if (error_p) {
+            *error_p = 1;
+        }
         return -1;
     }
     
@@ -77,6 +83,9 @@ static inline uint64_t skipWhitespace(const char * json, uint64_t * length_p, ui
     uint8_t length = 0;
     unsigned char offset = 0;
     uint64_t character;
+    if (error_p) {
+        *error_p = 0;
+    }
     do {
         offset += length;
         character = UTF8Character(&(json[offset]), &length, &error);
@@ -101,6 +110,10 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
     uint64_t offset = 0;
     uint64_t character;
     
+    if (error_p) {
+        *error_p = 0;
+    }
+    
     // Check for {
     character = UTF8Character(json, &charLength, &error);
     offset += charLength;
@@ -115,7 +128,7 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
         jsonParser->startObject(jsonParser->userInfo);
     }
     
-    // Check for end if empty
+    // Check for } if empty
     character = skipWhitespace(&(json[offset]), &length, &error);
     offset += length;
     if (character == '}') {
@@ -196,7 +209,11 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, j
     uint64_t offset = 0;
     uint64_t character;
     
-    // Check for [
+    if (error_p) {
+        *error_p = 0;
+    }
+    
+    // Check for {
     character = UTF8Character(json, &charLength, &error);
     offset += charLength;
     if (error || character != '[') {
@@ -251,6 +268,10 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, j
 }
 
 static inline uint64_t parseUTF16(const char * json, uint8_t * length_p, uint8_t * error_p) {
+    if (error_p) {
+        *error_p = 0;
+    }
+    
     char digit1, digit2, digit3, digit4;
     if ((digit1 = json[0]) && (digit2 = json[1]) && (digit3 = json[2]) && (digit4 = json[3])) {
         digit1 = (('0' <= digit1 && digit1 <= '9') ? digit1 - '0' : (('a' <= digit1 && digit1 <= 'f') ? digit1 - 'a' + 10 : (('A' <= digit1 && digit1 <= 'F') ? digit1 - 'A' + 10 : -1)));
@@ -318,6 +339,9 @@ static inline uint64_t parseUTF16(const char * json, uint8_t * length_p, uint8_t
 
 static inline uint64_t appendCharacter(uint64_t character, char * stringBuffer, size_t bufferSize, uint64_t stringLength, uint8_t * error_p) {
     uint64_t newLength = stringLength;
+    if (error_p) {
+        *error_p = 0;
+    }
     
     // One byte
     if (character < 0x80) {
@@ -429,6 +453,10 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
     uint64_t character;
     uint64_t offset = 0;
     
+    if (error_p) {
+        *error_p = 0;
+    }
+    
     // Check for "
     uint64_t spaceLength;
     character = skipWhitespace(json, &spaceLength, &error);
@@ -527,6 +555,9 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
 void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
+    if (error_p) {
+        *error_p = 0;
+    }
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 't' && json[1+length] == 'r' && json[2+length] == 'u' && json[3+length] == 'e') {
         *length_p = 4+length;
@@ -541,6 +572,9 @@ void parseJSONTrue(const char * json, uint64_t * length_p, uint8_t * error_p, js
 void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
+    if (error_p) {
+        *error_p = 0;
+    }
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 'f' && json[1+length] == 'a' && json[2+length] == 'l' && json[3+length] == 's' && json[4+length] == 'e') {
         *length_p = 5+length;
@@ -555,6 +589,9 @@ void parseJSONFalse(const char * json, uint64_t * length_p, uint8_t * error_p, j
 void parseJSONNull(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser) {
     uint8_t error;
     uint64_t length;
+    if (error_p) {
+        *error_p = 0;
+    }
     skipWhitespace(json, &length, &error);
     if (!error && json[0+length] == 'n' && json[1+length] == 'u' && json[2+length] == 'l' && json[3+length] == 'l') {
         *length_p = 4+length;
@@ -658,6 +695,10 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_p
     uint64_t offset = 0;
     uint64_t character;
     
+    if (error_p) {
+        *error_p = 0;
+    }
+    
     // Get next character, skipping whitespace
     character = skipWhitespace(&(json[offset]), &length, &error);
     offset += length;
@@ -701,10 +742,7 @@ void parseJSON(const char * json, uint64_t * length_p, uint8_t * error_p, json_p
     *length_p = offset + length;
     
     // Return error if any
-    if (error) {
-        if (error_p) {
-            *error_p = error;
-        }
-        return;
+    if (error && error_p) {
+        *error_p = error;
     }
 }
