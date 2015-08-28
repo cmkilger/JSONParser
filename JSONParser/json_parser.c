@@ -115,6 +115,18 @@ void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, 
         jsonParser->startObject(jsonParser->userInfo);
     }
     
+    // Check for end if empty
+    character = skipWhitespace(&(json[offset]), &length, &error);
+    offset += length;
+    if (character == '}') {
+        offset++;
+        if (jsonParser && jsonParser->endObject) {
+            jsonParser->endObject(jsonParser->userInfo);
+        }
+        *length_p = offset;
+        return;
+    }
+    
     while (1) {
         
         // Get key
@@ -184,7 +196,7 @@ void parseJSONArray(const char * json, uint64_t * length_p, uint8_t * error_p, j
     uint64_t offset = 0;
     uint64_t character;
     
-    // Check for {
+    // Check for [
     character = UTF8Character(json, &charLength, &error);
     offset += charLength;
     if (error || character != '[') {
