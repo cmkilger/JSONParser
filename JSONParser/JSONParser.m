@@ -8,8 +8,6 @@
 
 #import "JSONParser.h"
 #import "json_parser.h"
-#import <objc/runtime.h>
-#import <objc/objc-class.h>
 
 NSString * JSONParserErrorDomain = @"JSONParserErrorDomain";
 
@@ -80,12 +78,16 @@ void foundNull(void *userInfo) {
     parseJSON(data.bytes, &length, &parseError, &parser, buffer, size);
     free(buffer);
     
-    if (parseError && error) {
-        NSDictionary * userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(@"JSON is not in the correct format", @"Error message when failing to parse JSON")};
-        *error = [NSError errorWithDomain:JSONParserErrorDomain code:1000 userInfo:userInfo];
+    if (error) {
+        if (parseError && error) {
+            NSDictionary * userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(@"JSON is not in the correct format", @"Error message when failing to parse JSON")};
+            *error = [NSError errorWithDomain:JSONParserErrorDomain code:1000 userInfo:userInfo];
+        } else {
+            *error = nil;
+        }
     }
     
-    return parseError;
+    return (parseError == 0);
 }
 
 @end

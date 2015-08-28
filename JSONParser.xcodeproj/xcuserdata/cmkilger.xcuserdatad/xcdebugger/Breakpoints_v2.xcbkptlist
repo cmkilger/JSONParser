@@ -25,7 +25,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "200"
             endingLineNumber = "200"
-            landmarkName = "parseJSONArray()"
+            landmarkName = "parseJSONObject()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
