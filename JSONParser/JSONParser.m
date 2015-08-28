@@ -35,7 +35,7 @@ void endArray(void *userInfo) {
 
 void foundString(const char * string, uint64_t length, void * userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parser:parser foundString:[[NSString alloc] initWithUTF8String:string]];
+    [parser->_delegate parser:parser foundString:CFBridgingRelease(CFStringCreateWithBytes(NULL, (const UInt8 *)string, (CFIndex)length, kCFStringEncodingUTF8, false))];
 }
 
 void foundNumber(double number, void * userInfo) {
