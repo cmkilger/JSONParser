@@ -105,8 +105,8 @@ static inline uint64_t skipWhitespace(const char * json, uint64_t * length_p, ui
 
 void parseJSONObject(const char * json, uint64_t * length_p, uint8_t * error_p, json_parser * jsonParser, char * stringBuffer, size_t bufferSize) {
     uint8_t error;
-    uint8_t charLength;
-    uint64_t length;
+    uint8_t charLength = 0;
+    uint64_t length = 0;
     uint64_t offset = 0;
     uint64_t character;
     
@@ -458,7 +458,7 @@ void parseJSONString(const char * json, uint64_t * length_p, uint8_t * error_p, 
     }
     
     // Check for "
-    uint64_t spaceLength;
+    uint64_t spaceLength = 0;
     character = skipWhitespace(json, &spaceLength, &error);
     offset = spaceLength+1;
     if (error || character != '"') {
@@ -611,7 +611,7 @@ void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p, 
     
     double value = 0;
     
-    uint64_t spaceLength;
+    uint64_t spaceLength = 0;
     character = skipWhitespace(json, &spaceLength, &error);
     offset = spaceLength;
     
@@ -624,6 +624,7 @@ void parseJSONNumber(const char * json, uint64_t * length_p, uint8_t * error_p, 
     
     if (character == '0') {
         // Do nothing
+        offset++;
     } else if ('1' <= character && character <= '9') {
         do {
             value = (value * 10) + character - '0';
