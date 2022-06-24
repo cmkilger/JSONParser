@@ -13,16 +13,19 @@ let data = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))
 var start: Date
 var end: Date
 
+let iterations = 1000
+
 start = Date()
-for _ in 0 ..< 10 {
+for _ in 0 ..< iterations {
     _ = try CKJSONSerialization.jsonObject(with: data, options: [])
 }
 end = Date()
 print("CKJSONSerialization: \(end.timeIntervalSince(start)) seconds")
 
 sleep(2)
+
 start = Date()
-for _ in 0 ..< 10 {
+for _ in 0 ..< iterations {
     _ = try JSONSerialization.jsonObject(with: data, options: [])
 }
 end = Date()
