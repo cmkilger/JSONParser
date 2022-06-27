@@ -13,49 +13,49 @@ NSString * JSONParserErrorDomain = @"JSONParserErrorDomain";
 
 @implementation JSONParser
 
-void startObject(void *userInfo) {
+static inline void startObject(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserDidStartObject:parser];
+    [parser->_delegate parserDidStartObject:parser position:*((JSONPosition*)&position)];
 }
 
-void endObject(void *userInfo) {
+static inline void endObject(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserDidEndObject:parser];
+    [parser->_delegate parserDidEndObject:parser position:*((JSONPosition*)&position)];
 }
 
-void startArray(void *userInfo) {
+static inline void startArray(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserDidStartArray:parser];
+    [parser->_delegate parserDidStartArray:parser position:*((JSONPosition*)&position)];
 }
 
-void endArray(void *userInfo) {
+static inline void endArray(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserDidEndArray:parser];
+    [parser->_delegate parserDidEndArray:parser position:*((JSONPosition*)&position)];
 }
 
-void foundString(const char * string, uint64_t length, void * userInfo) {
+static inline void foundString(const char * string, uint64_t length, json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parser:parser foundString:CFBridgingRelease(CFStringCreateWithBytes(NULL, (const UInt8 *)string, (CFIndex)length, kCFStringEncodingUTF8, false))];
+    [parser->_delegate parser:parser foundString:CFBridgingRelease(CFStringCreateWithBytes(NULL, (const UInt8 *)string, (CFIndex)length, kCFStringEncodingUTF8, false)) position:*((JSONPosition*)&position)];
 }
 
-void foundNumber(double number, void * userInfo) {
+static inline void foundNumber(double number, json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parser:parser foundNumber:CFBridgingRelease(CFNumberCreate(NULL, kCFNumberDoubleType, &number))];
+    [parser->_delegate parser:parser foundNumber:CFBridgingRelease(CFNumberCreate(NULL, kCFNumberDoubleType, &number)) position:*((JSONPosition*)&position)];
 }
 
-void foundTrue(void *userInfo) {
+static inline void foundTrue(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserFoundTrue:parser];
+    [parser->_delegate parserFoundTrue:parser position:*((JSONPosition*)&position)];
 }
 
-void foundFalse(void *userInfo) {
+static inline void foundFalse(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserFoundFalse:parser];
+    [parser->_delegate parserFoundFalse:parser position:*((JSONPosition*)&position)];
 }
 
-void foundNull(void *userInfo) {
+static inline void foundNull(json_position position, void *userInfo) {
     JSONParser * parser = (__bridge JSONParser *)(userInfo);
-    [parser->_delegate parserFoundNull:parser];
+    [parser->_delegate parserFoundNull:parser position:*((JSONPosition*)&position)];
 }
 
 - (BOOL)parseData:(NSData *)data error:(NSError **)error {

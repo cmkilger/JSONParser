@@ -44,7 +44,7 @@
 
 #pragma mark - Parser delegate
     
-- (void)parserDidStartObject:(JSONParser *)parser {
+- (void)parserDidStartObject:(JSONParser *)parser position:(JSONPosition)position {
     NSMutableDictionary * object = [[NSMutableDictionary alloc] init];
     if (_currentKey && _currentObject) {
         [_currentObject setObject:object forKey:_currentKey];
@@ -59,7 +59,7 @@
     _currentArray = nil;
 }
 
-- (void)parserDidEndObject:(JSONParser *)parser {
+- (void)parserDidEndObject:(JSONParser *)parser position:(JSONPosition)position {
     [_containers removeLastObject];
     id container = [_containers lastObject];
     if ([container isKindOfClass:[NSMutableDictionary class]]) {
@@ -71,7 +71,7 @@
     }
 }
 
-- (void)parserDidStartArray:(JSONParser *)parser {
+- (void)parserDidStartArray:(JSONParser *)parser position:(JSONPosition)position {
     NSMutableArray * array = [[NSMutableArray alloc] init];
     if (_currentKey && _currentObject) {
         [_currentObject setObject:array forKey:_currentKey];
@@ -86,7 +86,7 @@
     _currentArray = array;
 }
 
-- (void)parserDidEndArray:(JSONParser *)parser {
+- (void)parserDidEndArray:(JSONParser *)parser position:(JSONPosition)position {
     [_containers removeLastObject];
     id container = [_containers lastObject];
     if ([container isKindOfClass:[NSMutableDictionary class]]) {
@@ -98,7 +98,7 @@
     }
 }
 
-- (void)parser:(JSONParser *)parser foundString:(NSString *)string {
+- (void)parser:(JSONParser *)parser foundString:(NSString *)string position:(JSONPosition)position {
     if (_currentObject) {
         if (_currentKey) {
             [_currentObject setObject:string forKey:_currentKey];
@@ -113,7 +113,7 @@
     }
 }
 
-- (void)parser:(JSONParser *)parser foundNumber:(NSNumber *)number {
+- (void)parser:(JSONParser *)parser foundNumber:(NSNumber *)number position:(JSONPosition)position {
     if (_currentObject) {
         [_currentObject setObject:number forKey:_currentKey];
         _currentKey = nil;
@@ -124,7 +124,7 @@
     }
 }
 
-- (void)parserFoundTrue:(JSONParser *)parser {
+- (void)parserFoundTrue:(JSONParser *)parser position:(JSONPosition)position {
     if (_currentObject) {
         [_currentObject setObject:@(YES) forKey:_currentKey];
         _currentKey = nil;
@@ -135,7 +135,7 @@
     }
 }
 
-- (void)parserFoundFalse:(JSONParser *)parser {
+- (void)parserFoundFalse:(JSONParser *)parser position:(JSONPosition)position {
     if (_currentObject) {
         [_currentObject setObject:@(NO) forKey:_currentKey];
         _currentKey = nil;
@@ -146,7 +146,7 @@
     }
 }
 
-- (void)parserFoundNull:(JSONParser *)parser {
+- (void)parserFoundNull:(JSONParser *)parser position:(JSONPosition)position {
     if (_currentObject) {
         [_currentObject setObject:[NSNull null] forKey:_currentKey];
         _currentKey = nil;
